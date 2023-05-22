@@ -201,7 +201,7 @@ public class BookCatalogGUI extends JFrame {
 
             StringBuilder sb = new StringBuilder();
             while (resultSet.next()) {
-                int id = resultSet.getInt("id");
+                int id = resultSet.getInt("book_id");
                 String title = resultSet.getString("title");
                 String author = resultSet.getString("author");
                 String genre = resultSet.getString("genre");
