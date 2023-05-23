@@ -23,6 +23,7 @@ public class BookCatalogGUI extends JFrame {
         setTitle("Book Catalog");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(500, 450);
+//        pack();
         setLocationRelativeTo(null);
 
         // Initialize components
@@ -74,16 +75,28 @@ public class BookCatalogGUI extends JFrame {
             }
         });
 
+        JButton homeButton = new JButton("Home");
+        homeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose(); // Close the current window
+                HomePageGUI homePage = new HomePageGUI();
+                homePage.setVisible(true); // Open the HomePageGUI
+            }
+        });
+
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0)); // Set layout with horizontal and vertical gaps
+        buttonPanel.add(homeButton);
         buttonPanel.add(addButton);
         buttonPanel.add(retrieveButton);
         buttonPanel.add(userManagementButton);
 
         resultArea = new JTextArea();
         resultArea.setEditable(false);
-        resultArea.setPreferredSize(new Dimension(resultArea.getPreferredSize().width, 150));
+        resultArea.setPreferredSize(new Dimension(resultArea.getPreferredSize().width, 200));
         JScrollPane scrollPane = new JScrollPane(resultArea);
+        scrollPane.setPreferredSize(new Dimension(400, 150)); // Set the preferred size of the scroll pane
 
 
         // Add components to the frame
@@ -129,6 +142,7 @@ public class BookCatalogGUI extends JFrame {
 
                 if (resultSet.next()) {
                     userRole = resultSet.getString("role");
+                    System.out.println("userRole: " + userRole);
                 }
             } catch (SQLException e) {
                 System.out.println("Failed to retrieve user's role");
@@ -137,7 +151,7 @@ public class BookCatalogGUI extends JFrame {
         }
     }
     private void openUserManagementPage() {
-        if (userRole.equals("administrator")) {
+        if (userRole!=null && userRole.equals("administrator")) {
             UserManagementPageGUI userManagementPage = new UserManagementPageGUI();
             userManagementPage.setVisible(true);
             dispose(); // Close the home page
