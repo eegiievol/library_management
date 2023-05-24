@@ -7,6 +7,8 @@ import java.sql.*;
 
 public class BookCatalogGUI extends JFrame {
     private JTextField titleField, authorField, genreField, descriptionField, priceField, availabilityField;
+
+    private JTextField cartBookId, cartQuantity;
     private JTextArea resultArea;
 
     private Connection connection;
@@ -22,13 +24,14 @@ public class BookCatalogGUI extends JFrame {
 
         setTitle("Book Catalog");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(500, 450);
+        setSize(500, 700);
 //        pack();
         setLocationRelativeTo(null);
 
-        // Initialize components
-        JPanel inputPanel = new JPanel();
-        inputPanel.setLayout(new GridLayout(7, 2));
+        /////////////////////////////////////
+        ////inputPanel///////////////////////
+        /////////////////////////////////////
+        JPanel inputPanel = new JPanel(new GridLayout(7, 2));
         inputPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         inputPanel.add(new JLabel("Title:"));
@@ -50,7 +53,28 @@ public class BookCatalogGUI extends JFrame {
         availabilityField = new JTextField();
         inputPanel.add(availabilityField);
 
-        JButton addButton = new JButton("Add");
+        mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(inputPanel, BorderLayout.NORTH);
+
+        /////////////////////////////////////
+        ////inputPanelCart///////////////////
+        /////////////////////////////////////
+        JPanel cartPanel = new JPanel(new GridLayout(3, 2));
+        cartPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        cartPanel.add(new JLabel("Book ID:"));
+        cartBookId = new JTextField();
+        cartPanel.add(cartBookId);
+        cartPanel.add(new JLabel("Quantity:"));
+        cartQuantity = new JTextField();
+        cartPanel.add(cartQuantity);
+
+        mainPanel.add(cartPanel, BorderLayout.CENTER);
+
+        /////////////////////////////////////
+        ////BUTTONS//////////////////////////
+        /////////////////////////////////////
+        JButton addButton = new JButton("AddBook");
         addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -58,7 +82,7 @@ public class BookCatalogGUI extends JFrame {
             }
         });
 
-        JButton retrieveButton = new JButton("Search books");
+        JButton retrieveButton = new JButton("Search");
         retrieveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -67,7 +91,7 @@ public class BookCatalogGUI extends JFrame {
             }
         });
 
-        JButton userManagementButton = new JButton("User Management");
+        JButton userManagementButton = new JButton("ManageUser");
         userManagementButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -85,27 +109,43 @@ public class BookCatalogGUI extends JFrame {
             }
         });
 
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0)); // Set layout with horizontal and vertical gaps
-        buttonPanel.add(homeButton);
-        buttonPanel.add(addButton);
-        buttonPanel.add(retrieveButton);
-        buttonPanel.add(userManagementButton);
+        JButton addToCartButton = new JButton("AddToCart");
+        addToCartButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                addToShoppingCart();
+            }
+        });
 
+        /////////////////////////////////////
+        ////SCROLL///////////////////////////
+        /////////////////////////////////////
         resultArea = new JTextArea();
         resultArea.setEditable(false);
         resultArea.setPreferredSize(new Dimension(resultArea.getPreferredSize().width, 200));
         JScrollPane scrollPane = new JScrollPane(resultArea);
         scrollPane.setPreferredSize(new Dimension(400, 150)); // Set the preferred size of the scroll pane
 
+        /////////////////////////////////////
+        ////PANELS///////////////////////////
+        /////////////////////////////////////
 
-        // Add components to the frame
-        setLayout(new BorderLayout());
-        add(inputPanel, BorderLayout.NORTH);
+        //main buttons
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0)); // Set layout with horizontal and vertical gaps
+        buttonPanel.add(homeButton);
+        buttonPanel.add(addButton);
+        buttonPanel.add(retrieveButton);
+        buttonPanel.add(addToCartButton);
+        buttonPanel.add(userManagementButton);
+
+        //layouts
+        mainPanel.add(cartPanel, BorderLayout.CENTER);
+        add(mainPanel, BorderLayout.NORTH);
         add(buttonPanel, BorderLayout.CENTER);
         add(scrollPane, BorderLayout.SOUTH);
 
-        // Connect to the database
+        // initialization
         connect();
         retrieveUserRole();
     }
@@ -245,6 +285,85 @@ public class BookCatalogGUI extends JFrame {
             e.printStackTrace();
         }
     }
+
+
+    private void addToShoppingCart() {
+        int bookId = Integer.parseInt(cartBookId.getText());
+        int quantity = Integer.parseInt(cartQuantity.getText());
+
+        String query = "INSERT INTO ShoppingCartItem (cart_id, book_id, quantity) VALUES (?, ?, ?)";
+
+        try {
+            // Get the cart ID for the current customer
+            int cartId = getCartIdForCustomer();
+
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, cartId);
+            statement.setInt(2, bookId);
+            statement.setInt(3, quantity);
+            System.out.println("cartId: " + cartId + ", bookId: " +bookId + ", quantity: " +quantity);
+
+            int rowsInserted = statement.executeUpdate();
+            if (rowsInserted > 0) {
+                System.out.println("The book was added to the shopping cart successfully");
+                cartBookId.setText("");
+            }
+        } catch (SQLException e) {
+            System.out.println("Failed to add the book to the shopping cart");
+            e.printStackTrace();
+        }
+    }
+
+    private int getCartIdForCustomer() throws SQLException {
+        String query = "SELECT cart_id FROM ShoppingCart WHERE customer_id = ?";
+
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setInt(1, getCustomerId());
+
+        ResultSet resultSet = statement.executeQuery();
+
+        if (resultSet.next()) {
+            return resultSet.getInt("cart_id");
+        }
+
+        return createNewShoppingCart();
+    }
+
+    private int createNewShoppingCart() throws SQLException {
+        String query = "INSERT INTO ShoppingCart (customer_id) VALUES (?)";
+        PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+        statement.setInt(1, getCustomerId());
+
+        int rowsInserted = statement.executeUpdate();
+        if (rowsInserted > 0) {
+            ResultSet generatedKeys = statement.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                return generatedKeys.getInt(1);
+            }
+        }
+
+        throw new SQLException("Failed to create a new shopping cart");
+    }
+
+    private int getCustomerId() throws SQLException {
+        //
+        int userid=0;
+        int customerid=0;
+
+        //
+        String query = "SELECT customer_id FROM Customer WHERE user_id = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setInt(1, userid);
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            customerid = resultSet.getInt("customer_id");
+            System.out.println("getCustomerId -> customerid: " + customerid);
+            return customerid;
+        }
+
+        throw new SQLException("Failed to retrieve customer ID");
+    }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {

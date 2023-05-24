@@ -5,25 +5,28 @@ import java.awt.event.ActionListener;
 import java.sql.*;
 
 public class RegistrationPageGUI extends JFrame {
-    private JTextField usernameField, passwordField;
+    private JTextField usernameField, passwordField, emailField;
 
     private Connection connection;
 
     public RegistrationPageGUI() {
         setTitle("Registration");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(300, 200);
+        setSize(400, 300);
         setLocationRelativeTo(null);
 
         // Initialize components
         JPanel inputPanel = new JPanel();
-        inputPanel.setLayout(new GridLayout(2, 2));
+        inputPanel.setLayout(new GridLayout(4, 2));
         inputPanel.add(new JLabel("Username:"));
         usernameField = new JTextField();
         inputPanel.add(usernameField);
         inputPanel.add(new JLabel("Password:"));
         passwordField = new JTextField();
         inputPanel.add(passwordField);
+        inputPanel.add(new JLabel("Email:"));
+        emailField = new JTextField();
+        inputPanel.add(emailField);
 
         JButton registerButton = new JButton("Register");
         registerButton.addActionListener(new ActionListener() {
@@ -67,21 +70,69 @@ public class RegistrationPageGUI extends JFrame {
         }
     }
 
+    private int getUserId(String username) throws SQLException {
+        int userid=-1;
+
+        String query = "SELECT user_id FROM User WHERE username = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, username);
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            userid = resultSet.getInt("user_id");
+            return userid;
+        }
+
+        throw new SQLException("Failed to retrieve customer ID");
+    }
+
+    private void registerCustomer(int user_id) {
+        String username = usernameField.getText();
+        String email = emailField.getText();
+
+        String query = "INSERT INTO Customer (user_id, name, contact_details) VALUES (?,?,?)";
+
+        try {
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, user_id);
+            statement.setString(2, username);
+            statement.setString(3, email);
+
+            int rowsInserted = statement.executeUpdate();
+            if (rowsInserted > 0) {
+                System.out.println("New customer profile created successfully");
+                JOptionPane.showMessageDialog(RegistrationPageGUI.this, "Registration successful!");
+
+                dispose(); // Close the registration page after successful registration
+            }
+        } catch (SQLException e) {
+            System.out.println("Failed to register the customer");
+            e.printStackTrace();
+        }
+    }
+
     private void registerUser() {
         String username = usernameField.getText();
         String password = passwordField.getText();
+        String email = emailField.getText();
+        String role = "customer";
 
-        String query = "INSERT INTO User (username, password) VALUES (?, ?)";
+        String query = "INSERT INTO User (username, password, email, role) VALUES (?, ?, ?, ?)";
 
         try {
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, username);
             statement.setString(2, password);
+            statement.setString(3, email);
+            statement.setString(4, role);
 
             int rowsInserted = statement.executeUpdate();
             if (rowsInserted > 0) {
                 System.out.println("New user registered successfully");
                 JOptionPane.showMessageDialog(RegistrationPageGUI.this, "Registration successful!");
+
+                //create customer_id for same user
+                int user_id = getUserId(username);
+                registerCustomer(user_id);
                 dispose(); // Close the registration page after successful registration
             }
         } catch (SQLException e) {
