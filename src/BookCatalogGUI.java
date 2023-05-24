@@ -75,7 +75,7 @@ public class BookCatalogGUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 dispose(); // Close the current window
                 HomePageGUI homePage = new HomePageGUI();
-                homePage.setVisible(true); // Open the HomePageGUI
+                homePage.setVisible(true);
             }
         });
 
@@ -142,9 +142,9 @@ public class BookCatalogGUI extends JFrame {
         /////////////////////////////////////
         resultArea = new JTextArea();
         resultArea.setEditable(false);
-        resultArea.setPreferredSize(new Dimension(resultArea.getPreferredSize().width, 200));
+        resultArea.setPreferredSize(new Dimension(resultArea.getPreferredSize().width, 500));
         JScrollPane scrollPane = new JScrollPane(resultArea);
-        scrollPane.setPreferredSize(new Dimension(400, 150));
+        scrollPane.setPreferredSize(new Dimension(400, 200));
 
         /////////////////////////////////////
         ////PANELS///////////////////////////
@@ -152,7 +152,7 @@ public class BookCatalogGUI extends JFrame {
 
         //main buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
-//        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0)); // Set layout with horizontal and vertical gaps
+//        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0));
         buttonPanel.add(homeButton);
         buttonPanel.add(addButton);
         buttonPanel.add(retrieveButton);
@@ -162,8 +162,8 @@ public class BookCatalogGUI extends JFrame {
         buttonPanel.add(statisticsButton);
 
         //cart buttons
-        JPanel buttonPanelCart = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // Set layout with horizontal and vertical gaps
-//        buttonPanelCart.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0)); // Set layout with horizontal and vertical gaps
+        JPanel buttonPanelCart = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+//        buttonPanelCart.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0));
         buttonPanelCart.add(addToCartButton);
         buttonPanelCart.add(checkoutButton);
 

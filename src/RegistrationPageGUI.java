@@ -15,7 +15,6 @@ public class RegistrationPageGUI extends JFrame {
         setSize(400, 300);
         setLocationRelativeTo(null);
 
-        // Initialize components
         JPanel inputPanel = new JPanel();
         inputPanel.setLayout(new GridLayout(4, 2));
         inputPanel.add(new JLabel("Username:"));
@@ -34,18 +33,15 @@ public class RegistrationPageGUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 registerUser();
 
-                // Switch to the homepage (login page)
                 HomePageGUI homePageGUI = new HomePageGUI();
                 homePageGUI.setVisible(true);
             }
         });
 
-        // Add components to the frame
         setLayout(new BorderLayout());
         add(inputPanel, BorderLayout.CENTER);
         add(registerButton, BorderLayout.SOUTH);
 
-        // Connect to the database
         connect();
     }
 
@@ -102,7 +98,7 @@ public class RegistrationPageGUI extends JFrame {
                 System.out.println("New customer profile created successfully");
                 JOptionPane.showMessageDialog(RegistrationPageGUI.this, "Registration successful!");
 
-                dispose(); // Close the registration page after successful registration
+                dispose();
             }
         } catch (SQLException e) {
             System.out.println("Failed to register the customer");
@@ -130,10 +126,9 @@ public class RegistrationPageGUI extends JFrame {
                 System.out.println("New user registered successfully");
                 JOptionPane.showMessageDialog(RegistrationPageGUI.this, "Registration successful!");
 
-                //create customer_id for same user
                 int user_id = getUserId(username);
                 registerCustomer(user_id);
-                dispose(); // Close the registration page after successful registration
+                dispose();
             }
         } catch (SQLException e) {
             System.out.println("Failed to register the user");

@@ -14,16 +14,13 @@ public class StatisticsGUI extends JFrame {
         setSize(500, 400);
         setLocationRelativeTo(null);
 
-        // Create a text area to display the query results
         resultArea = new JTextArea();
         resultArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(resultArea);
 
-        // Create buttons for different statistics
         JButton salesAmountButton = new JButton("Generate Book Sales Report");
         JButton popularGenresButton = new JButton("Generate Popular Genres Report");
 
-        // Set the layout
         setLayout(new BorderLayout());
         add(scrollPane, BorderLayout.CENTER);
         JPanel buttonPanel = new JPanel(new FlowLayout());
@@ -31,10 +28,8 @@ public class StatisticsGUI extends JFrame {
         buttonPanel.add(popularGenresButton);
         add(buttonPanel, BorderLayout.SOUTH);
 
-        // Connect to the database
         connect();
 
-        // Add action listeners to the buttons
         salesAmountButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 generateBookSalesReport();
@@ -71,22 +66,18 @@ public class StatisticsGUI extends JFrame {
 
     private void generateBookSalesReport() {
         try {
-            // Prepare the SQL statement
             String sql = "SELECT SUM(s.quantity * b.price) AS total_sales_amount " +
                     "FROM ShoppingCartItem s " +
                     "JOIN Books b ON s.book_id = b.book_id";
             PreparedStatement statement = connection.prepareStatement(sql);
 
-            // Execute the query
             ResultSet resultSet = statement.executeQuery();
 
-            // Process the result
             if (resultSet.next()) {
                 double totalSalesAmount = resultSet.getDouble("total_sales_amount");
                 resultArea.setText("Total Sales Amount: $" + totalSalesAmount);
             }
 
-            // Close the resources
             resultSet.close();
             statement.close();
         } catch (SQLException e) {
@@ -96,7 +87,6 @@ public class StatisticsGUI extends JFrame {
 
     private void generatePopularGenresReport() {
         try {
-            // Prepare the SQL statement
             String sql = "SELECT b.genre, COUNT(s.item_id) AS total_sold " +
                     "FROM ShoppingCartItem s " +
                     "JOIN Books b ON s.book_id = b.book_id " +
@@ -104,10 +94,8 @@ public class StatisticsGUI extends JFrame {
                     "ORDER BY total_sold DESC";
             PreparedStatement statement = connection.prepareStatement(sql);
 
-            // Execute the query
             ResultSet resultSet = statement.executeQuery();
 
-            // Process the result
             StringBuilder report = new StringBuilder();
             report.append("Popular Genres Report:\n");
             while (resultSet.next()) {
@@ -116,10 +104,8 @@ public class StatisticsGUI extends JFrame {
                 report.append("Genre: ").append(genre).append(", Total Sold: ").append(totalSold).append("\n");
             }
 
-            // Display the report in the result area
             resultArea.setText(report.toString());
 
-            // Close the resources
             resultSet.close();
             statement.close();
         } catch (SQLException e) {

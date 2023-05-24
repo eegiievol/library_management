@@ -41,7 +41,7 @@ public class UserManagementPageGUI extends JFrame {
         });
 
         JPanel buttonPanel = new JPanel();
-//        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0)); // Set layout with horizontal and vertical gaps
+//        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0));
         buttonPanel.add(homeButton);
         buttonPanel.add(refreshButton);
         buttonPanel.add(modifyButton);
