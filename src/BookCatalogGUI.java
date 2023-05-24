@@ -28,7 +28,7 @@ public class BookCatalogGUI extends JFrame {
 
         setTitle("Book Catalog");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(500, 700);
+        setSize(500, 530);
 //        pack();
         setLocationRelativeTo(null);
 
@@ -36,10 +36,18 @@ public class BookCatalogGUI extends JFrame {
         ////BUTTONS//////////////////////////
         /////////////////////////////////////
         JButton addButton = new JButton("AddBook");
+//        addButton.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                addBook();
+//            }
+//        });
         addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                addBook();
+//                dispose(); // Close the current window
+                AddBookPageGUI addBookPage = new AddBookPageGUI();
+                addBookPage.setVisible(true);
             }
         });
 
@@ -151,7 +159,7 @@ public class BookCatalogGUI extends JFrame {
         /////////////////////////////////////
 
         //main buttons
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 20));
 //        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0));
         buttonPanel.add(homeButton);
         buttonPanel.add(addButton);
@@ -173,7 +181,7 @@ public class BookCatalogGUI extends JFrame {
 
         // Main panel
         JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.add(inputPanel, BorderLayout.NORTH);
+//        mainPanel.add(inputPanel, BorderLayout.NORTH);
         mainPanel.add(buttonPanel, BorderLayout.CENTER);
 
         // Cart panel
