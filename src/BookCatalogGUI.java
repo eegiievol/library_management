@@ -201,6 +201,7 @@ public class BookCatalogGUI extends JFrame {
         // initialization
         connect();
         retrieveUserRole();
+        retrieveBooks(null);
     }
 
     private void connect() {
@@ -262,41 +263,6 @@ public class BookCatalogGUI extends JFrame {
             dispose();
         } else {
             JOptionPane.showMessageDialog(BookCatalogGUI.this, "You do not have permission to access user management.");
-        }
-    }
-
-    private void addBook() {
-        String title = titleField.getText();
-        String author = authorField.getText();
-        String genre = genreField.getText();
-        String description = descriptionField.getText();
-        double price = Double.parseDouble(priceField.getText());
-        boolean availability = Boolean.parseBoolean(availabilityField.getText());
-
-        String query = "INSERT INTO books (title, author, genre, description, price, availability) VALUES (?, ?, ?, ?, ?, ?)";
-
-        try {
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, title);
-            statement.setString(2, author);
-            statement.setString(3, genre);
-            statement.setString(4, description);
-            statement.setDouble(5, price);
-            statement.setBoolean(6, availability);
-
-            int rowsInserted = statement.executeUpdate();
-            if (rowsInserted > 0) {
-                System.out.println("A new book was inserted successfully");
-                titleField.setText("");
-                authorField.setText("");
-                genreField.setText("");
-                descriptionField.setText("");
-                priceField.setText("");
-                availabilityField.setText("");
-            }
-        } catch (SQLException e) {
-            System.out.println("Failed to insert the book");
-            e.printStackTrace();
         }
     }
 
