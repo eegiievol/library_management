@@ -43,7 +43,11 @@ public class ModifyPageGUI extends JFrame {
         deleteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                deleteUser();
+                try {
+                    deleteUser();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
         });
 
@@ -122,16 +126,55 @@ public class ModifyPageGUI extends JFrame {
         }
     }
 
-    private void deleteUser() {
+    private void deleteUser() throws SQLException {
         String username = usernameField.getText();
 
-        String query = "DELETE FROM User WHERE username = ?";
+        //get userID first
+        int userid = -1;
+        String query = "SELECT user_id FROM User WHERE username = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, username);
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            userid = resultSet.getInt("user_id");
+            System.out.println("getUserIdForCart -> userid: " + userid);
+        }
 
+        //get customer id
+        int customerid = -1;
+        String csquery = "SELECT customer_id FROM Customer WHERE user_id = ?";
+        PreparedStatement csstatement = connection.prepareStatement(csquery);
+        csstatement.setInt(1, userid);
+        ResultSet csresultSet = csstatement.executeQuery();
+        if (csresultSet.next()) {
+            customerid = csresultSet.getInt("customer_id");
+            System.out.println("getCustomerId -> customerid: " + customerid);
+        }
+
+        //delete customer
+        String dQuery = "DELETE FROM Customer WHERE customer_id = ?";
         try {
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, username);
+            PreparedStatement dqStatement = connection.prepareStatement(dQuery);
+            dqStatement.setInt(1, customerid);
 
-            int rowsDeleted = statement.executeUpdate();
+            int rowsDeleted = dqStatement.executeUpdate();
+            if (rowsDeleted > 0) {
+                System.out.println("User deleted successfully");
+                JOptionPane.showMessageDialog(ModifyPageGUI.this, "customer deleted successfully!");
+                clearFields();
+            }
+        } catch (SQLException e) {
+            System.out.println("Failed to delete customer");
+            e.printStackTrace();
+        }
+
+        //delete user
+        String duQuery = "DELETE FROM User WHERE user_id = ?";
+        try {
+            PreparedStatement duStatement = connection.prepareStatement(duQuery);
+            duStatement.setInt(1, userid);
+
+            int rowsDeleted = duStatement.executeUpdate();
             if (rowsDeleted > 0) {
                 System.out.println("User deleted successfully");
                 JOptionPane.showMessageDialog(ModifyPageGUI.this, "User deleted successfully!");

@@ -14,7 +14,11 @@ public class BookCatalogGUI extends JFrame {
     private Connection connection;
     private String username;
     private String userRole;
+    private int shopCartID;
     private JPanel mainPanel;
+    private JPanel cartPanel;
+
+
     JTextField searchField;
 
     public BookCatalogGUI(String username) {
@@ -27,49 +31,6 @@ public class BookCatalogGUI extends JFrame {
         setSize(500, 700);
 //        pack();
         setLocationRelativeTo(null);
-
-        /////////////////////////////////////
-        ////inputPanel///////////////////////
-        /////////////////////////////////////
-        JPanel inputPanel = new JPanel(new GridLayout(7, 2));
-        inputPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-
-        inputPanel.add(new JLabel("Title:"));
-        titleField = new JTextField();
-        inputPanel.add(titleField);
-        inputPanel.add(new JLabel("Author:"));
-        authorField = new JTextField();
-        inputPanel.add(authorField);
-        inputPanel.add(new JLabel("Genre:"));
-        genreField = new JTextField();
-        inputPanel.add(genreField);
-        inputPanel.add(new JLabel("Description:"));
-        descriptionField = new JTextField();
-        inputPanel.add(descriptionField);
-        inputPanel.add(new JLabel("Price:"));
-        priceField = new JTextField();
-        inputPanel.add(priceField);
-        inputPanel.add(new JLabel("Availability:"));
-        availabilityField = new JTextField();
-        inputPanel.add(availabilityField);
-
-        mainPanel = new JPanel(new BorderLayout());
-        mainPanel.add(inputPanel, BorderLayout.NORTH);
-
-        /////////////////////////////////////
-        ////inputPanelCart///////////////////
-        /////////////////////////////////////
-        JPanel cartPanel = new JPanel(new GridLayout(3, 2));
-        cartPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-
-        cartPanel.add(new JLabel("Book ID:"));
-        cartBookId = new JTextField();
-        cartPanel.add(cartBookId);
-        cartPanel.add(new JLabel("Quantity:"));
-        cartQuantity = new JTextField();
-        cartPanel.add(cartQuantity);
-
-        mainPanel.add(cartPanel, BorderLayout.CENTER);
 
         /////////////////////////////////////
         ////BUTTONS//////////////////////////
@@ -99,6 +60,15 @@ public class BookCatalogGUI extends JFrame {
             }
         });
 
+        JButton statisticsButton = new JButton("Statistics");
+        statisticsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openStatistics();
+            }
+
+        });
+
         JButton homeButton = new JButton("Home");
         homeButton.addActionListener(new ActionListener() {
             @Override
@@ -117,6 +87,56 @@ public class BookCatalogGUI extends JFrame {
             }
         });
 
+        JButton checkoutButton = new JButton("Checkout");
+        checkoutButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    openCheckoutPage();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
+
+        /////////////////////////////////////
+        ////inputPanel///////////////////////
+        /////////////////////////////////////
+        JPanel inputPanel = new JPanel(new GridLayout(7, 2));
+        inputPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        inputPanel.add(new JLabel("Title:"));
+        titleField = new JTextField();
+        inputPanel.add(titleField);
+        inputPanel.add(new JLabel("Author:"));
+        authorField = new JTextField();
+        inputPanel.add(authorField);
+        inputPanel.add(new JLabel("Genre:"));
+        genreField = new JTextField();
+        inputPanel.add(genreField);
+        inputPanel.add(new JLabel("Description:"));
+        descriptionField = new JTextField();
+        inputPanel.add(descriptionField);
+        inputPanel.add(new JLabel("Price:"));
+        priceField = new JTextField();
+        inputPanel.add(priceField);
+        inputPanel.add(new JLabel("Availability:"));
+        availabilityField = new JTextField();
+        inputPanel.add(availabilityField);
+
+        /////////////////////////////////////
+        ////Shop Cart Panel//////////////////
+        /////////////////////////////////////
+        JPanel cartInputPanel = new JPanel(new GridLayout(5, 2));
+        cartInputPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        cartInputPanel.add(new JLabel("To add Book to Shopping Cart, enter book_id and quantity below:"));
+        cartInputPanel.add(new JLabel("Book ID:"));
+        cartBookId = new JTextField();
+        cartInputPanel.add(cartBookId);
+        cartInputPanel.add(new JLabel("Quantity:"));
+        cartQuantity = new JTextField();
+        cartInputPanel.add(cartQuantity);
+
         /////////////////////////////////////
         ////SCROLL///////////////////////////
         /////////////////////////////////////
@@ -124,26 +144,51 @@ public class BookCatalogGUI extends JFrame {
         resultArea.setEditable(false);
         resultArea.setPreferredSize(new Dimension(resultArea.getPreferredSize().width, 200));
         JScrollPane scrollPane = new JScrollPane(resultArea);
-        scrollPane.setPreferredSize(new Dimension(400, 150)); // Set the preferred size of the scroll pane
+        scrollPane.setPreferredSize(new Dimension(400, 150));
 
         /////////////////////////////////////
         ////PANELS///////////////////////////
         /////////////////////////////////////
 
         //main buttons
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0)); // Set layout with horizontal and vertical gaps
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+//        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0)); // Set layout with horizontal and vertical gaps
         buttonPanel.add(homeButton);
         buttonPanel.add(addButton);
         buttonPanel.add(retrieveButton);
-        buttonPanel.add(addToCartButton);
-        buttonPanel.add(userManagementButton);
 
-        //layouts
-        mainPanel.add(cartPanel, BorderLayout.CENTER);
-        add(mainPanel, BorderLayout.NORTH);
-        add(buttonPanel, BorderLayout.CENTER);
+        //extra button
+        buttonPanel.add(userManagementButton);
+        buttonPanel.add(statisticsButton);
+
+        //cart buttons
+        JPanel buttonPanelCart = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0)); // Set layout with horizontal and vertical gaps
+//        buttonPanelCart.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0)); // Set layout with horizontal and vertical gaps
+        buttonPanelCart.add(addToCartButton);
+        buttonPanelCart.add(checkoutButton);
+
+        // Create parent panel
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+
+        // Main panel
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(inputPanel, BorderLayout.NORTH);
+        mainPanel.add(buttonPanel, BorderLayout.CENTER);
+
+        // Cart panel
+        JPanel cartPanel = new JPanel(new BorderLayout());
+        cartPanel.add(cartInputPanel, BorderLayout.CENTER);
+        cartPanel.add(buttonPanelCart, BorderLayout.SOUTH);
+
+        // Add main panel and cart panel to parent panel
+        contentPanel.add(mainPanel);
+        contentPanel.add(cartPanel);
+
+        // Add the parent panel and scroll pane to the container
+        add(contentPanel, BorderLayout.CENTER);
         add(scrollPane, BorderLayout.SOUTH);
+
 
         // initialization
         connect();
@@ -171,8 +216,20 @@ public class BookCatalogGUI extends JFrame {
         }
     }
 
+    private void openStatistics(){
+        if (userRole.equals("administrator")) {
+            // Open the StatisticsGUI
+            StatisticsGUI statisticsGUI = new StatisticsGUI();
+            statisticsGUI.setVisible(true);
+        }
+        else {
+            JOptionPane.showMessageDialog(BookCatalogGUI.this, "You do not have permission to access statistics.");
+
+        }
+    }
+
     private void retrieveUserRole() {
-        if (connection != null) { // Check if connection is established
+        if (connection != null) {
             String query = "SELECT role FROM User WHERE username = ?";
 
             try {
@@ -194,7 +251,7 @@ public class BookCatalogGUI extends JFrame {
         if (userRole!=null && userRole.equals("administrator")) {
             UserManagementPageGUI userManagementPage = new UserManagementPageGUI();
             userManagementPage.setVisible(true);
-            dispose(); // Close the home page
+            dispose();
         } else {
             JOptionPane.showMessageDialog(BookCatalogGUI.this, "You do not have permission to access user management.");
         }
@@ -294,7 +351,6 @@ public class BookCatalogGUI extends JFrame {
         String query = "INSERT INTO ShoppingCartItem (cart_id, book_id, quantity) VALUES (?, ?, ?)";
 
         try {
-            // Get the cart ID for the current customer
             int cartId = getCartIdForCustomer();
 
             PreparedStatement statement = connection.prepareStatement(query);
@@ -314,8 +370,23 @@ public class BookCatalogGUI extends JFrame {
         }
     }
 
+    private int getUserIdForCart() throws SQLException {
+        int userid = -1;
+        String query = "SELECT user_id FROM User WHERE username = ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, this.username);
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            userid = resultSet.getInt("user_id");
+            System.out.println("getUserIdForCart -> userid: " + userid);
+            return userid;
+        }
+
+        throw new SQLException("Failed to retrieve USER ID");
+    }
     private int getCartIdForCustomer() throws SQLException {
         String query = "SELECT cart_id FROM ShoppingCart WHERE customer_id = ?";
+        int cartid = -1;
 
         PreparedStatement statement = connection.prepareStatement(query);
         statement.setInt(1, getCustomerId());
@@ -323,7 +394,9 @@ public class BookCatalogGUI extends JFrame {
         ResultSet resultSet = statement.executeQuery();
 
         if (resultSet.next()) {
-            return resultSet.getInt("cart_id");
+            cartid = resultSet.getInt("cart_id");
+            System.out.println("getCartIdForCustomer -> cartid: " + cartid);
+            return cartid;
         }
 
         return createNewShoppingCart();
@@ -347,8 +420,8 @@ public class BookCatalogGUI extends JFrame {
 
     private int getCustomerId() throws SQLException {
         //
-        int userid=0;
-        int customerid=0;
+        int userid = getUserIdForCart();
+        int customerid = -1;
 
         //
         String query = "SELECT customer_id FROM Customer WHERE user_id = ?";
@@ -361,9 +434,15 @@ public class BookCatalogGUI extends JFrame {
             return customerid;
         }
 
-        throw new SQLException("Failed to retrieve customer ID");
+        throw new SQLException("Failed to retrieve CUSTOMER ID");
     }
 
+    private void openCheckoutPage() throws SQLException {
+        int cartID = getCartIdForCustomer();
+        System.out.println("openCheckoutPage -> cartID: " + cartID);
+        CheckoutPageGUI checkoutPage = new CheckoutPageGUI(cartID);
+        checkoutPage.setVisible(true);
+    }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {

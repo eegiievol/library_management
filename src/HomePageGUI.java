@@ -31,11 +31,9 @@ public class HomePageGUI extends JFrame {
                 String username = usernameField.getText();
                 String password = String.valueOf(passwordField.getPassword());
                 if (login(username, password)) {
-                    // Successful login
                     openMainGUI(username);
-                    dispose(); // Close the current window
+                    dispose();
                 } else {
-                    // Invalid credentials
                     JOptionPane.showMessageDialog(HomePageGUI.this, "Invalid username or password", "Login Failed", JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -46,7 +44,7 @@ public class HomePageGUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 openRegistrationPage();
-                dispose(); // Close the current window
+                dispose();
             }
         });
 
@@ -65,7 +63,6 @@ public class HomePageGUI extends JFrame {
         buttonPanel.add(registerButton);
 //        buttonPanel.add(userManagementButton);
 
-        // Add components to the frame
         setLayout(new BorderLayout());
         add(inputPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
