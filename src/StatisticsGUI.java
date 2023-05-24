@@ -20,12 +20,18 @@ public class StatisticsGUI extends JFrame {
 
         JButton salesAmountButton = new JButton("Generate Book Sales Report");
         JButton popularGenresButton = new JButton("Generate Popular Genres Report");
+        JButton maxCartItemButton = new JButton("Generate Max Amount Cart Items Report");
+
 
         setLayout(new BorderLayout());
+
         add(scrollPane, BorderLayout.CENTER);
+
         JPanel buttonPanel = new JPanel(new FlowLayout());
         buttonPanel.add(salesAmountButton);
         buttonPanel.add(popularGenresButton);
+        buttonPanel.add(maxCartItemButton);
+
         add(buttonPanel, BorderLayout.SOUTH);
 
         connect();
@@ -41,6 +47,13 @@ public class StatisticsGUI extends JFrame {
                 generatePopularGenresReport();
             }
         });
+
+        maxCartItemButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                generateMaxQuantityCartItemReport();
+            }
+        });
+
     }
 
     private void connect() {
@@ -69,14 +82,21 @@ public class StatisticsGUI extends JFrame {
             String sql = "SELECT SUM(s.quantity * b.price) AS total_sales_amount " +
                     "FROM ShoppingCartItem s " +
                     "JOIN Books b ON s.book_id = b.book_id";
-            PreparedStatement statement = connection.prepareStatement(sql);
 
+            StringBuilder report = new StringBuilder();
+            PreparedStatement statement = connection.prepareStatement(sql);
+            long startTime = System.currentTimeMillis();
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
                 double totalSalesAmount = resultSet.getDouble("total_sales_amount");
-                resultArea.setText("Total Sales Amount: $" + totalSalesAmount);
+                report.append("Total Sales Amount: $").append(totalSalesAmount).append("\n");
             }
+            long endTime = System.currentTimeMillis();
+            long runtime = endTime - startTime;
+            report.append("\nRuntime in Millis: ").append(runtime);
+
+            resultArea.setText(report.toString());
 
             resultSet.close();
             statement.close();
@@ -94,6 +114,7 @@ public class StatisticsGUI extends JFrame {
                     "ORDER BY total_sold DESC";
             PreparedStatement statement = connection.prepareStatement(sql);
 
+            long startTime = System.currentTimeMillis();
             ResultSet resultSet = statement.executeQuery();
 
             StringBuilder report = new StringBuilder();
@@ -103,6 +124,46 @@ public class StatisticsGUI extends JFrame {
                 int totalSold = resultSet.getInt("total_sold");
                 report.append("Genre: ").append(genre).append(", Total Sold: ").append(totalSold).append("\n");
             }
+            long endTime = System.currentTimeMillis();
+            long runtime = endTime - startTime;
+            report.append("\nRuntime in Millis: ").append(runtime);
+
+            resultArea.setText(report.toString());
+
+            resultSet.close();
+            statement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void generateMaxQuantityCartItemReport() {
+        try {
+            String sql = "cus.name, c.cart_id, i.quantity " +
+                    "FROM ShoppingCartItem i " +
+                    "JOIN ShoppingCart c ON i.cart_id = c.cart_id" +
+                    "JOIN Customer cus ON cus.customer_id = c.customer_id" +
+                    "ORDER BY i.quantity DESC";
+            PreparedStatement statement = connection.prepareStatement(sql);
+
+            long startTime = System.currentTimeMillis();
+            ResultSet resultSet = statement.executeQuery();
+
+            StringBuilder report = new StringBuilder();
+            report.append("Popular Genres Report:\n");
+            while (resultSet.next()) {
+                String customerName = resultSet.getString("cus.name");
+                int cartId = resultSet.getInt("c.cart_id");
+                int quantity = resultSet.getInt("i.quantity");
+
+                report.append("customerName: ").append(customerName)
+                        .append(", cartId: ").append(cartId)
+                        .append(", quantity: ").append(quantity)
+                        .append("\n");
+            }
+            long endTime = System.currentTimeMillis();
+            long runtime = endTime - startTime;
+            report.append("\nRuntime in Millis: ").append(runtime);
 
             resultArea.setText(report.toString());
 
