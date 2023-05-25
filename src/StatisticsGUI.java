@@ -21,16 +21,17 @@ public class StatisticsGUI extends JFrame {
         JButton salesAmountButton = new JButton("Generate Book Sales Report");
         JButton popularGenresButton = new JButton("Generate Popular Genres Report");
         JButton maxCartItemButton = new JButton("Generate Max Amount Cart Items Report");
-
+        JButton mostExpensiveSolBookButton = new JButton("Best Most Expensive Books being Sold Report");
 
         setLayout(new BorderLayout());
 
         add(scrollPane, BorderLayout.CENTER);
 
-        JPanel buttonPanel = new JPanel(new FlowLayout());
+        JPanel buttonPanel = new JPanel(new GridLayout(2, 2));
         buttonPanel.add(salesAmountButton);
         buttonPanel.add(popularGenresButton);
         buttonPanel.add(maxCartItemButton);
+        buttonPanel.add(mostExpensiveSolBookButton);
 
         add(buttonPanel, BorderLayout.SOUTH);
 
@@ -51,6 +52,12 @@ public class StatisticsGUI extends JFrame {
         maxCartItemButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 generateMaxQuantityCartItemReport();
+            }
+        });
+
+        mostExpensiveSolBookButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                generateMostExpensiveSolBookReport();
             }
         });
 
@@ -139,10 +146,10 @@ public class StatisticsGUI extends JFrame {
 
     private void generateMaxQuantityCartItemReport() {
         try {
-            String sql = "cus.name, c.cart_id, i.quantity " +
+            String sql = "SELECT cus.name, c.cart_id, i.quantity " +
                     "FROM ShoppingCartItem i " +
-                    "JOIN ShoppingCart c ON i.cart_id = c.cart_id" +
-                    "JOIN Customer cus ON cus.customer_id = c.customer_id" +
+                    "JOIN ShoppingCart c ON i.cart_id = c.cart_id " +
+                    "JOIN Customer cus ON cus.customer_id = c.customer_id " +
                     "ORDER BY i.quantity DESC";
             PreparedStatement statement = connection.prepareStatement(sql);
 
@@ -150,15 +157,15 @@ public class StatisticsGUI extends JFrame {
             ResultSet resultSet = statement.executeQuery();
 
             StringBuilder report = new StringBuilder();
-            report.append("Popular Genres Report:\n");
+            report.append("Max Quantity Cart Items Report:\n");
             while (resultSet.next()) {
                 String customerName = resultSet.getString("cus.name");
                 int cartId = resultSet.getInt("c.cart_id");
                 int quantity = resultSet.getInt("i.quantity");
 
-                report.append("customerName: ").append(customerName)
-                        .append(", cartId: ").append(cartId)
-                        .append(", quantity: ").append(quantity)
+                report.append("Customer Name: ").append(customerName)
+                        .append(", Cart ID: ").append(cartId)
+                        .append(", Quantity: ").append(quantity)
                         .append("\n");
             }
             long endTime = System.currentTimeMillis();
@@ -173,6 +180,39 @@ public class StatisticsGUI extends JFrame {
             e.printStackTrace();
         }
     }
+
+    private void generateMostExpensiveSolBookReport() {
+        try {
+            String sql = "SELECT DISTINCT b.title, b.price " +
+                    "FROM ShoppingCartItem s " +
+                    "JOIN Books b ON s.book_id = b.book_id " +
+                    "ORDER BY b.price DESC";
+
+            PreparedStatement statement = connection.prepareStatement(sql);
+
+            long startTime = System.currentTimeMillis();
+            ResultSet resultSet = statement.executeQuery();
+
+            StringBuilder report = new StringBuilder();
+            report.append("Best Most Expensive Books being Sold Report:\n");
+            while (resultSet.next()) {
+                String bookName = resultSet.getString("title");
+                double price = resultSet.getDouble("price");
+                report.append("Book Name: ").append(bookName).append(", Price: ").append(price).append("\n");
+            }
+            long endTime = System.currentTimeMillis();
+            long runtime = endTime - startTime;
+            report.append("\nRuntime in Millis: ").append(runtime);
+
+            resultArea.setText(report.toString());
+
+            resultSet.close();
+            statement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
